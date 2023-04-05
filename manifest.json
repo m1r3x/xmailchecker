@@ -1,0 +1,29 @@
+{
+    "name": "XMail",
+    "version": "0.1.0",
+    "description": "Checking Email content for spams",
+    "permissions": ["storage", "tabs", "activeTab", "scripting"],
+    "host_permissions": ["https://*.mail.google.com/*","https://mail-attachment.googleusercontent.com/*","https://www.virustotal.com/api/*"],
+    "content_scripts": [
+      {
+        "matches": ["https://*.mail.google.com/*"],
+        "css": ["assets/styles.css"]
+      }
+    ],
+    "web_accessible_resources": [
+      {
+        "resources": [
+          "assets/bookmark.png",
+          "assets/play.png",
+          "assets/delete.png",
+          "assets/save.png"
+        ],
+        "matches": ["https://*.mail.google.com/*"]
+      }
+    ],
+    "action": {
+      "default_title": "XMail",
+      "default_popup": "popup.html"
+    },
+    "manifest_version": 3
+}
