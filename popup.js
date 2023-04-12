@@ -1,7 +1,5 @@
-
-const secret = "virustotal-key-here";
-
-const authServer = 'https://oyster-app-lzfqy.ondigitalocean.app';
+const secret = "6b647294775f31ff6feaf95a77661e3974fc6563b5cb65d6db35cba74a6e4f6d";
+const authServer = 'https://urchin-app-5xqlg.ondigitalocean.app';
 
 document.addEventListener('DOMContentLoaded', () => {
     if(!checkAuthorized()){
@@ -12,6 +10,11 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     
 });
+
+async function sleep(delay) {
+    var start = new Date().getTime();
+    while (new Date().getTime() < start + delay);
+}
 
 function checkAuthorized(){
     var session = localStorage.getItem('token');
@@ -42,7 +45,7 @@ const loginPageContent =
             <input type="text" id="email" placeholder="Email">
             <input type="password" id="password" placeholder="Password">
             <br>
-            <a href="#" style="font-size: medium;">Forgot your password?</a>
+            <a href="#" style="font-size: medium;" id="forgotPasswordLink">Forgot your password?</a>
             <button>Log in</button>
             </form>
         </div>
@@ -129,6 +132,270 @@ function loadLoginPage(){
           console.error('Error during registration:', error);
         }
       });
+
+    //for forgot password
+    document.getElementById("forgotPasswordLink").addEventListener("click", async function(event){
+        event.preventDefault();
+        loadPassForgotPage();
+    })
+}
+
+passForgotPageContent = `
+<style>
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+    }
+    body, html {
+        font-family: Arial, Helvetica, sans-serif;
+        background: #f8f8f8;
+        background-attachment: fixed;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        height: 100%;
+        margin: 0 auto;
+    }
+    .email-container {
+        background: #fff;
+        border-radius: 10px;
+        box-shadow: 0 14px 28px rgba(0, 0, 0, .25), 0 10px 10px rgba(0, 0, 0, .22);
+        padding: 1.8rem;
+        width: 20rem;
+        text-align: center;
+    }
+    h1 {
+        margin: 0.2rem;
+        font-size: 1.2rem;
+    }
+    input[type="email"] {
+        width: 100%;
+        height: 2.2rem;
+        text-indent: 1rem;
+        border: 1px solid #ccc;
+        border-left: none;
+        border-right: none;
+        border-top: none;
+        outline: none;
+        margin: 0.6rem 0;
+    }
+    input[type="email"]:focus {
+        border-bottom: 1px solid #4caf50;
+    }
+    button {
+        padding: 0.4rem 1rem;
+        background: #417dff;
+        color: white;
+        border: 1px solid #fff;
+        outline: none;
+        cursor: pointer;
+        width: 100%;
+        border-radius: 8px;
+        transition: all 100ms ease-in;
+        margin: 0.6rem 0;
+        font-size: 0.8rem;
+    }
+    button:hover {
+        background-color: #3868d8;
+    }
+    button:active {
+        background-color: #2e57c0;
+        transform: translateY(1px);
+    }
+</style>
+<div class="email-container">
+    <h3>Enter your email address. We will send you one time password.</h3>
+    <p id="notifyUser"></p>
+    <input type="email" name="email" id="email" placeholder="example@example.com">
+    <button type="submit" id="submitButton">Submit</button>
+    <a href="#" id="goToResetPage">Reset Page</a><br><br>
+    <a href="#" id="goBackButton">Go back</a><br>
+</div>
+`
+
+function loadPassForgotPage(){
+    const app = document.getElementById('app');
+    app.innerHTML = passForgotPageContent
+
+    const goBackButton = document.getElementById("goBackButton")
+    goBackButton.addEventListener("click", function(event){
+        event.preventDefault()
+        loadLoginPage()
+    })
+
+    const goToResetPage = document.getElementById("goToResetPage")
+    goToResetPage.addEventListener("click", function(event){
+        event.preventDefault()
+        loadResetPage()
+    })
+
+    const submitButton = document.getElementById("submitButton")
+    submitButton.addEventListener("click", function(){
+        const email = document.getElementById('email').value;
+        console.log(email)
+        const nofifyElem = document.getElementById('notifyUser')
+        if(email == ""){
+            nofifyElem.innerHTML = '<p class="error">Please enter your email address.</p>'
+        }
+        else{
+            const encodedEmail = btoa(email)
+            console.log(encodedEmail)
+            fetch(`${authServer}/api/auth/reset/${encodedEmail}`)
+                .then(async response => {
+                    if (!response.ok) {
+                        //throw new Error('Network response was not ok');
+                    }
+                    const data = await response.json();
+                    console.log(response)
+                    nofifyElem.innerHTML = '<p class="clean">If your email is registered then you will receive an OTP code.</p>'
+                })
+                .catch(error => {
+                console.error('There was a problem with the fetch operation:', error);
+            });
+        }
+    })
+}
+
+const resetPageContent =
+`
+<style>
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+    }
+    body, html {
+        font-family: Arial, Helvetica, sans-serif;
+        background: #f8f8f8;
+        background-attachment: fixed;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        height: 100%;
+        margin: 0 auto;
+    }
+    .reset-container {
+        background: #fff;
+        border-radius: 10px;
+        box-shadow: 0 14px 28px rgba(0, 0, 0, .25), 0 10px 10px rgba(0, 0, 0, .22);
+        padding: 1.8rem;
+        width: 20rem;
+        text-align: center;
+    }
+    h1 {
+        margin: 0.2rem;
+        font-size: 1.2rem;
+    }
+    input[type="email"], input[type="text"], input[type="password"] {
+        width: 100%;
+        height: 2.2rem;
+        text-indent: 1rem;
+        border: 1px solid #ccc;
+        border-left: none;
+        border-right: none;
+        border-top: none;
+        outline: none;
+        margin: 0.6rem 0;
+    }
+    input[type="email"]:focus, input[type="text"]:focus, input[type="password"]:focus {
+        border-bottom: 1px solid #4caf50;
+    }
+    button {
+        padding: 0.4rem 1rem;
+        background: #417dff;
+        color: white;
+        border: 1px solid #fff;
+        outline: none;
+        cursor: pointer;
+        width: 100%;
+        border-radius: 8px;
+        transition: all 100ms ease-in;
+        margin: 0.6rem 0;
+        font-size: 0.8rem;
+    }
+    button:hover {
+        background-color: #3868d8;
+    }
+    button:active {
+        background-color: #2e57c0;
+        transform: translateY(1px);
+    }
+</style>
+
+<div class="reset-container">
+    <h1>Password Reset</h1>
+    <p id="notifyUser"></p>
+    <input type="email" name="email" id="email" placeholder="Email">
+    <input type="text" name="otp" id="otp" placeholder="OTP">
+    <input type="password" name="new_password" id="new_password" placeholder="New Password">
+    <input type="password" name="confirm_password" id="confirm_password" placeholder="Confirm Password">
+    <button type="submit" id="submit">Reset Password</button><br>
+    <!-- <a href="#" id="goBackButton2">Go back</a><br> -->
+</div>
+
+`
+
+function loadResetPage(){
+    const app = document.getElementById('app');
+    app.innerHTML = resetPageContent
+
+    const submitButton = document.getElementById("submit")
+    submitButton.addEventListener("click", function(){
+        const email = document.getElementById('email').value;
+        const otp = document.getElementById('otp').value;
+        const newPassword = document.getElementById('new_password').value;
+        const confirmPassword = document.getElementById('confirm_password').value;
+
+        // const goBackButton = document.getElementById("goBackButton2")
+        // goBackButton.addEventListener("click", function(event){
+        //     event.preventDefault()
+        //     console.log('clicked')
+        //     loadLoginPage()
+        // })
+
+        const nofifyElem = document.getElementById('notifyUser')
+        if(email == ""){
+            nofifyElem.innerHTML = '<p class="error">Please enter your email address.</p>'
+        }
+        else{
+            const encodedEmail = btoa(email)
+            console.log(encodedEmail)
+            console.log(newPassword, confirmPassword)
+            fetch(`${authServer}/api/auth/resetpassword`,{
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                }, 
+                body: JSON.stringify({
+                    email: email,
+                    otp: otp,
+                    newPassword: newPassword,
+                    confirmPassword: confirmPassword
+                })
+                
+            }).then(async response => {
+                    // if (!response.ok) {
+                    //     throw new Error('Network response was not ok');
+                    // }
+                    var responseData = await response.json() 
+                    if(responseData.status === "error"){
+                        nofifyElem.innerHTML = '<p class="error">'+ responseData.message +'</p>';
+                    }else{
+                        nofifyElem.innerHTML = '<p class="clean">Your password has been reset successfully.</p>';
+                        setTimeout(() => {
+                            loadLoginPage();
+                        }, 2000);
+                    }
+                })
+                .catch(error => { 
+                    nofifyElem.innerHTML = '<p class="error">'+ error +'</p>';
+                    console.error('There was a problem with the fetch operation:', error);
+                });
+        }
+    })
 }
 
 
@@ -187,11 +454,8 @@ async function handleSuccessfulLogin(response) {
 
 async function handleSuccessfulRegister(response) {
     const data = await response.json();
-    localStorage.setItem('token', data.data.token);
-    localStorage.setItem('name', data.data.data.firstname);
-    localStorage.setItem('surname', data.data.data.lastname);
-    loadDashboard()
-   
+    const notificationElem = document.getElementById("RegisterError")
+    notificationElem.innerHTML = '<p class="clean">' + data.message + '</p>'
 }
 
 
@@ -245,6 +509,7 @@ function getPageText() {
         const payload = []
 
         const element = document.querySelector('.ii.gt');
+        const subject = document.querySelector('.hP');
 
         const urls = []
 
@@ -256,8 +521,8 @@ function getPageText() {
         if (element == null){
             payload.push('')
         }else{
-            //payload.push(element.textContent.trim().replace(/(\r\n|\n|\r)/gm, " ").replace(/\s+/g, ' ').trim())
-            payload.push(element.textContent.replace(/\s+/g, " ").trim())
+            newtextt = subject.textContent + '.\n' + element.textContent
+            payload.push(newtextt.replace(/\s+/g, " ").trim())
         }
     
         const elements = document.querySelectorAll('.aQy.aZr.e');
@@ -540,8 +805,8 @@ function sendMailContentToModel(payload){
                 outputElem.innerHTML = outputElem.innerHTML.replace("Checking text...", "")
 
                 newElement = document.createElement('p')
-                newElement.textContent = 'Text is predicted to be spam.';
-                newElement.style.color = "orange";
+                newElement.textContent = 'Text is predicted to be clean.';
+                newElement.style.color = "green";
 
                 outputElem.appendChild(newElement);
             }

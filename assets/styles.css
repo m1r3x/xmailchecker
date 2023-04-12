@@ -292,3 +292,10 @@ button.ghost:active {
 #links > span {
   display: block;
 }
+
+.container-second {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+}
